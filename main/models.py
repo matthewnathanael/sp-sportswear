@@ -11,7 +11,7 @@ class Product(models.Model):
         ('tas', 'Tas'),
         ('sleeve', 'Sleeves'),
         ('kaos kaki', 'Kaos Kaki'),
-        ('tidak ada', 'Tidak Ada'),
+        ('lain', 'Lainnya'),
     ]
     
 
