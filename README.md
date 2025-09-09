@@ -32,6 +32,19 @@ git push origin master
 git push pws master 
 Dengan melakukan step-step berikut, saya sudah berhasil membuat aplikasi main.
 
+
+# Bagan request client ke web aplikasi berbasis Django
+![alt text](image.png) reference: https://www.biznetgio.com/news/django
+Pada bagan tersebut kita dapat melihat alur dari request client ke web,
+di mana client disini akan melakukan request atau membuat permintaan yang nantinya akan diterima oleh URL, yang kemudian akan diarahkan ke views yang sesuai. Lalu, views akan berinteraksi dengan model untuk mengelola data di database, dan memilih template untuk menghasilkan halaman web yang dikirimkan kembali sebagai respons ke client.
+Untuk fungsi dari masing-masing komponen:
+Client -> sebagai pengguna (yang melakukan request ke server web)
+URL -> melakukan checking yang diminta ke fungsi yang tepat didalam views (url akan mencari kecocokkan)
+Views -> berinteraksi dengan model(mengambil data dari database) dan memilih template yang digunakan untuk menampilkan respons kepada clientnya
+Model  -> struktur data aplikasinya, biasa mewakili tabel (digunakan untuk membaca/menulis oleh views)
+Template -> file html, disini contohnya seperti main.html yang dibuat, berisi markup statis, dapat menampilkan data dinamis yang dikirimkan oleh Views (seperti yang ada pada main.html {{ class }} )
+
+
 # Fungsi settings.py pada projek django
 Selama proses pembuatan aplikasi tersebut, settings.py berperan penting dalam konfigurasi proyek Django. Dengan memodifikasi settings.py kita dapat menambahkan allowed_host, menggunakan env, mendefinisi detail ke database, dapat mencantumkan semua aplikasi (digunakan django untuk mengetahui model, template) jadi untuk mengubah perilaku proyek django memang perlu melakukan modifikasi pada settings.py
 
