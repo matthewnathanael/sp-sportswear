@@ -1,7 +1,61 @@
-<h1>Main</h1>
-<h5>Aplikasi:</h5>
-<p>{{ aplikasi }}</p>
-<h5>Nama:</h5>
-<p>{{ name }}</p>
-<h5>Kelas:</h5>
-<p>{{ class }}</p>
+{% extends 'base.html' %}
+
+{% block content %}
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ nama_aplikasi }}</title>
+</head>
+
+<body>
+    <h1>{{ nama_aplikasi }}</h1>
+    <p>Nama: {{ name }}</p>
+    <p>Kelas: {{ class }}</p>
+
+    <a href="{% url 'main:create_product' %}">
+        <button>+ Add Product</button>
+    </a>
+
+    <hr>
+
+    {% if not product_list %}
+    <p>Belum ada data produk pada {{ nama_aplikasi }}.</p>
+    {% else %}
+    {% for product in product_list %}
+    <div>
+        <h2>
+            <a href="{% url 'main:show_products' product.id %}">
+                {{ product.name }}
+            </a>
+        </h2>
+
+        <p>
+            <b>Kategori:</b> {{ product.category }}
+            {% if product.is_featured %} | <b>Featured</b>{% endif %}
+            | <i>Harga: Rp {{ product.price }}</i>
+        </p>
+
+        {% if product.thumbnail %}
+        <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
+        <br />
+        {% endif %}
+
+        <p>{{ product.description|truncatewords:25 }}...</p>
+
+        <p>
+            <a href="{% url 'main:show_products' product.id %}">
+                <button>Detail</button>
+            </a>
+        </p>
+    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
+</body>
+
+</html>
+
+{% endblock content %}
+<!-- Komentar tambahan -->
