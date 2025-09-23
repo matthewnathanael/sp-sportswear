@@ -33,7 +33,6 @@ git push pws master
 Dengan melakukan step-step berikut, saya sudah berhasil membuat aplikasi main.
 
 
-# Bagan request client ke web aplikasi berbasis Django
 ![alt text](image.png) reference: https://www.biznetgio.com/news/django
 Pada bagan tersebut kita dapat melihat alur dari request client ke web,
 di mana client disini akan melakukan request atau membuat permintaan yang nantinya akan diterima oleh URL, yang kemudian akan diarahkan ke views yang sesuai. Lalu, views akan berinteraksi dengan model untuk mengelola data di database, dan memilih template untuk menghasilkan halaman web yang dikirimkan kembali sebagai respons ke client.
@@ -45,16 +44,13 @@ Model  -> struktur data aplikasinya, biasa mewakili tabel (digunakan untuk memba
 Template -> file html, disini contohnya seperti main.html yang dibuat, berisi markup statis, dapat menampilkan data dinamis yang dikirimkan oleh Views (seperti yang ada pada main.html {{ class }} )
 
 
-# Fungsi settings.py pada projek django
 Selama proses pembuatan aplikasi tersebut, settings.py berperan penting dalam konfigurasi proyek Django. Dengan memodifikasi settings.py kita dapat menambahkan allowed_host, menggunakan env, mendefinisi detail ke database, dapat mencantumkan semua aplikasi (digunakan django untuk mengetahui model, template) jadi untuk mengubah perilaku proyek django memang perlu melakukan modifikasi pada settings.py
 
-# Cara kerja migrasi database di Django
 Migrasi database di Django adalah cara untuk memperbarui skema database agar sesuai dengan perubahan pada model Django. Proses ini terdiri dari membuat migrasi dan menerapkan migrasi
 
 manage.py makemigrations -> memindahkan models.py, membuat file migration baru di directory migration -> gunanya agar dapat mengetahui perubahan pada model (belum diapply ke database)
 manage.py migrate ->  django akan membaca file dan eksekusi SQL (membuat kolom baru pada table), mengaplikasikan perubahan model yang tercantum dalam berkas migrasi ke basis data
 
-# Kelebihan Framework Django
 Django sering direkomendasikan sebagai framework permulaan untuk pengembangan, terutama untuk orang-orang yang ingin fokus ke web-developing.
 Django menyediakan semua yang developer butuhkan untuk membangun suatu aplikasi web. Ketika menggunakan framework Django, tidak memerlukan untuk download-download atau install banyak hal untuk fungsi dasar, sangat mudah untuk digunakan. Django sudah memiliki fitur-fitur bawaan yang membuat pengguna/pengembang web tidak perlu kesusahan menginstall dari tempat lain. Selain itu, dari segi security/keamanan, Django sudah memiliki keamanan yang sangat kuat berbeda dengan PHP, secara bawaan framework ini sudah bisa melindungi dari beberapa serangan umum sperti SQLi, XSS dan lain-lain.
 Selain itu, Django juga menerapkan pola desain MTV, yang dimana sangat mirip dengan MVC, struktur ini memisahkan logika aplikasi dengan rapi. Tentunya hal ini akan sangat baik bagi pemula agar bisa membangun kebiasaaan koding yang baik (separation of concerns)
@@ -91,3 +87,28 @@ Tentu, hal ini juga berlaku apabila ingin menambahkan show_xml_by_id dan show_js
 - Setelah selesai, saya melakukan checking dengan membuka localhost dari produk yang sudah saya tambahkan. Lalu, saya menggunakan postman untuk melihat hasil dari seluruh step yang sudah dilakukan.
 - Setelah melakukan checking, saya melakukan deaktivasi virtual environment dan melakukan commit pada github dan pws.
 6. Feedback tidak ada, menurut saya asistensi untuk tutorial sudah baik dan lumayan bisa di mengerti. 
+
+# Tugas 4
+1. Dalam Django, authentication berguna untuk melakukan checking terhadap user yang sedang log-in, secara sederhana, authentication akan memberikan akses hanya kepada user yang memiliki akses kepada akun tersebut. Jadi, AuthenticationForm adalah form yang berasal dari django dan digunakan untuk proses login user. Pada proses login akan menyediakan field input yang berasal dari user untuk disamakan (username & password), lalu nantinya akan dilakukan proses autentikasi dengan cara menggunakan authenticate(), proses authentication sendiri sangat efektif karena dapat melakukan otomasi checking terhadap user. Walaupun, beberapa hal harus diubah jika ingin menambahkan authentication lain.
+
+2. Authentication dan Authorization memiliki perbedaan, di mana orang yang memiliki terautentikasi belum tentu memiliki autorisasi terhadap akses tertentu.   
+Autentikasi -> memastikan user yang melakukan login
+Otorisasi -> akses-akses yang hanya diberikan kepada user tertentu
+Contoh autentikasi dapat kita lihat ketika proses login dengan fitur django menggunakan authenticationform (memastikan user yang login memiliki password yang benar)
+sedangkan authorization, hanya memberikan akses misal kepada orang yang sudah login, jadi kalau belum login tidak bisa mengakses halaman utama (penggunaan login_required pada show_main)
+
+3. Kelebihan dari cookies adalah cepat diakses, dapat digunakan untuk menyimpan preference user, terhadap size font, dll, dan tidak memerlukan server tambahan, Lalu jika data disimpan dalam cookies, aplikasi web dapat mengakses ssecara offline, dan juga dapat melacak pengguna di berbagai situs web.
+Namun, kekurangan cookies yaitu, dari segi keamanan, seringkali ada kasus dimana cookies tidak aman karena data tidak dienkripsi(penting), pengguna juga bisa menonaktifkan cookies sehingga fungsi cookies sendiri tidak berlaku. Selain itu, cookies juga tidak efektif untuk menyimpan data kompleks, dan hanya digunakan untuk data sederhana. Cookies juga sangat rentan untuk terkena serangan Cross-Site Scripting dan CSRF (Cross Site Request Forgery)
+
+Session, serbeda dengan cookies, session adalah cara untuk menyimpan informasi tentang pengguna di sisi server. Session digunakan untuk melacak state pengguna atau user. Di mana ID session ini akan digunakan untuk identifikasi pengguna dan disimpan ke dalam cookies, ID tersebut dapat digunakan untuk mengambil data session dari server
+
+Kelebihan session, memiliki keamanan yang lebih dibandingkan cookies karena datanya di simpan di sisi server, web developer juga bisa menghapus data session kapan saja. Lalu, dari segi penggunaannya sendiri session API lebih gampang digunakan dan diintegrasikan ke web. (session tidak memiliki limit ukuran)
+
+Kekurangan session, seperti beban server terlalu banyak jika terlalu banyak user, jika server mati maka data session hilang, session sulit untuk diskalakan 
+
+4. Penggunaan cookies secara default dalam pengembangan web, tergolong tidak aman karena dapat membawa resiko seperti CSRF, pencurian cookies dan potensi-potensi buruk lainnya, ada risk yang harus diwaspadai, sehingga penggunaan cookies secara default penuh dengan risiko. Untungnya, Django dapat melakukan solving pada problem tersebut dengan menggunakan,
+- CSRF_TOKEN, Django menyediakan token CSRF yang harus disertakan dalam setiap formulir POST. Token ini memastikan bahwa permintaan berasal dari pengguna yang valid, bukan dari serangan luar. Token ini disandingkan dengan cookie CSRF yang unik per sesi.
+- Django secara default mengatur flag HttpOnly pada cookie sesi. Ini berarti cookie tersebut tidak dapat diakses atau dimanipulasi oleh skrip sisi klien (seperti JavaScript). Dengan demikian, risiko pencurian cookie melalui serangan Cross-Site Scripting (XSS) berkurang secara signifikan.
+- Django dapat dikonfigurasi untuk hanya mengirimkan cookie melalui koneksi yang aman (HTTPS) dengan mengaktifkan pengaturan SESSION_COOKIE_SECURE dan CSRF_COOKIE_SECURE. Hal ini mencegah cookie dicegat oleh pihak ketiga saat transmisi.
+
+5. 
