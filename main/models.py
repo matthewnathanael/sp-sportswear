@@ -14,7 +14,7 @@ class Product(models.Model):
         ('lain', 'Lainnya'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) # tambahkan ini
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) 
     name = models.CharField(max_length=255)
     price = models.PositiveIntegerField(default=0)
     description = models.TextField()
@@ -29,5 +29,5 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
-    
+
  
