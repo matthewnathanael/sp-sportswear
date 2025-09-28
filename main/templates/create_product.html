@@ -1,6 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block meta %}
 <title>Add Product - {{ nama_aplikasi }}</title>
 {% endblock meta %}
@@ -43,7 +41,7 @@
                 </div>
                 {% endfor %}
 
-                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t-4 border-stone-700">
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                     <a href="{% url 'main:show_main' %}"
                         class="order-2 sm:order-1 px-6 py-3 border-2 border-stone-700 text-stone-700 rounded-md font-medium bg-amber-100 hover:bg-amber-200 hover:border-stone-800 transition-colors text-center">
                         Cancel
