@@ -1,0 +1,74 @@
+{% load static %}
+<article class="bg-white rounded-xl border border-gray-200 shadow-lg 
+           transform transition-all duration-300 ease-in-out 
+           hover:scale-[1.03] hover:shadow-xl hover:border-amber-400
+           overflow-hidden flex flex-col">
+
+    <div class="aspect-[16/9] relative overflow-hidden">
+        {% if product.thumbnail %}
+        <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+        {% else %}
+        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+            <span class="text-gray-500">No Image</span>
+        </div>
+        {% endif %}
+
+        <div class="absolute top-3 left-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                  bg-amber-100 text-stone-800 border border-amber-300">
+                {{ product.get_category_display }}
+            </span>
+        </div>
+
+        <div class="absolute top-3 right-3 flex space-x-2">
+            {% if product.is_featured %}
+            <span
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-200 text-orange-900">
+                Featured
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="p-4 sm:p-5 flex-grow flex flex-col">
+
+        <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <time datetime="{{ product.created_at|date:'c' }}">
+                {{ product.created_at|date:"M j, Y" }}
+            </time>
+            <span class="text-xl font-bold text-stone-700 font-price">
+                Rp {{ product.price }}
+            </span>
+        </div>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+            <a href="{% url 'main:show_products' product.id %}" class="hover:text-stone-700 transition-colors">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <p class="text-gray-700 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow">
+            {{ product.description|truncatewords:20 }}
+        </p>
+
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+            <a href="{% url 'main:show_products' product.id %}"
+                class="text-stone-700 hover:text-stone-800 font-medium text-sm transition-colors">
+                Read more →
+            </a>
+
+            {% if user.is_authenticated and product.user == user %}
+            <div class="flex space-x-3">
+                <a href="{% url 'main:edit_product' product.id %}"
+                    class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
+                    Edit
+                </a>
+                <a href="{% url 'main:delete_product' product.id %}"
+                    class="text-red-600 hover:text-red-700 text-sm transition-colors">
+                    Delete
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</article>

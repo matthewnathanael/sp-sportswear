@@ -53,6 +53,28 @@ def show_products(request, id):
 
     return render(request, "product_detail.html", context)
 
+
+
+def edit_product(request, id):
+    products = get_object_or_404(Product, pk=id)
+    form = ProductForm(request.POST or None, instance=products)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+
+
+
 def show_xml(request):
     product_list = Product.objects.all()
     xml_data = serializers.serialize("xml", product_list)

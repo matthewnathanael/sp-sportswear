@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>Add Product - {{ nama_aplikasi }}</title>
+<title>Edit Product - SP Sportswear</title>
 {% endblock meta %}
 
 {% block content %}
@@ -21,7 +21,8 @@
              shadow-[6px_6px_0_0_rgba(68,64,60,1)] 
              transition-shadow duration-150 ease-out">
             <div class="mb-8">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Add new product</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Edit Product</h1>
+                <p class="text-gray-700">Update your Product</p>
             </div>
 
             <form method="POST" class="space-y-6">
@@ -43,14 +44,14 @@
                 </div>
                 {% endfor %}
 
-                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t-4 border-stone-700">
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                     <a href="{% url 'main:show_main' %}"
                         class="order-2 sm:order-1 px-6 py-3 border-2 border-stone-700 text-stone-700 rounded-md font-medium bg-amber-100 hover:bg-amber-200 hover:border-stone-800 transition-colors text-center">
                         Cancel
                     </a>
                     <button type="submit"
                         class="order-1 sm:order-2 flex-1 bg-stone-700 text-white px-6 py-3 rounded-md font-medium hover:bg-stone-800 transition-colors">
-                        Add Product
+                        Update Product
                     </button>
                 </div>
             </form>
