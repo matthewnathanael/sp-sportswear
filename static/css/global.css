@@ -11,8 +11,8 @@ form select {
 form textarea:focus,
 form select:focus {
     outline: none;
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3px #16a34a;
+    border-color: gray;
+    box-shadow: 0 0 0 3px gray;
 }
 
 .form-style input[type="checkbox"] {
