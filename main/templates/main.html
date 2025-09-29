@@ -21,10 +21,6 @@
             shadow-[6px_6px_0_0_rgba(68,64,60,1)] 
             transition-shadow duration-150 ease-out">
             <div class="flex space-x-3 mb-4 sm:mb-0">
-                <a href="{% url 'main:create_product' %}"
-                    class="inline-flex items-center px-4 py-2 bg-stone-700 text-white rounded-md hover:bg-stone-800 transition-colors font-medium">
-                    + Add Product
-                </a>
                 <a href="?filter=all"
                     class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     All Products
