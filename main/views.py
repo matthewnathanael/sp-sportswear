@@ -17,9 +17,11 @@ from django.urls import reverse
 def show_main(request):
     filter_type = request.GET.get("filter", "all")  
     if filter_type == "all":
-     product_list = Product.objects.all()
+        product_list = Product.objects.all()
+    elif filter_type == "featured":
+        product_list = Product.objects.filter(is_featured=True)
     else:
-     product_list = Product.objects.filter(user=request.user)
+        product_list = Product.objects.filter(user=request.user)
     
     context = {
         'name': 'Matthew Nathanael',

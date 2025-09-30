@@ -1,7 +1,10 @@
 {% load static %}
+
 <article class="bg-white rounded-xl border border-gray-200 shadow-lg 
+           {% if not is_carousel %}
            transform transition-all duration-300 ease-in-out 
            hover:scale-[1.03] hover:shadow-xl hover:border-amber-400
+           {% endif %}
            overflow-hidden flex flex-col">
 
     <div class="aspect-[16/9] relative overflow-hidden">
@@ -20,14 +23,12 @@
             </span>
         </div>
 
-        <div class="absolute top-3 right-3 flex space-x-2">
-            {% if product.is_featured %}
-            <span
-                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-200 text-orange-900">
-                Featured
-            </span>
-            {% endif %}
-        </div>
+        {% if product.is_featured %}
+        <span class="absolute top-3 right-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+              bg-red-600 text-white shadow-md">
+            Featured
+        </span>
+        {% endif %}
     </div>
 
     <div class="p-4 sm:p-5 flex-grow flex flex-col">

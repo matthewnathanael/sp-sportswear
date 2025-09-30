@@ -25,6 +25,11 @@
                     class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     All Products
                 </a>
+
+                <a href="?filter=featured"
+                    class="{% if request.GET.filter == 'featured' %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
+                    Featured Products
+                </a>
                 <a href="?filter=my"
                     class="{% if request.GET.filter == 'my' %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     My Products
