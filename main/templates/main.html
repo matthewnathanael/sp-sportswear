@@ -8,7 +8,7 @@
 {% block content %}
 {% include 'navbar.html' %}
 <div class="bg-amber-50 w-full pt-16 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="w-full mx-auto px-6 lg:px-12 py-8">
 
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ nama_aplikasi }}</h1>
@@ -20,6 +20,7 @@
             border-2 border-stone-700 
             shadow-[6px_6px_0_0_rgba(68,64,60,1)] 
             transition-shadow duration-150 ease-out">
+
             <div class="flex space-x-3 mb-4 sm:mb-0">
                 <a href="?filter=all"
                     class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
@@ -52,7 +53,7 @@
         {% if not product_list %}
         <div class="bg-white rounded-lg border border-amber-200 p-12 text-center">
             <div class="w-32 h-32 mx-auto mb-4">
-                <img src="{% static 'image/no-data.png' %}" alt="No products available"
+                <img src="{% static 'image/no-product.png' %}" alt="No products available"
                     class="w-full h-full object-contain">
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data produk.</h3>
@@ -63,7 +64,7 @@
             </a>
         </div>
         {% else %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for product in product_list %}
             {% include 'card_product.html' with product=product %}
             {% endfor %}

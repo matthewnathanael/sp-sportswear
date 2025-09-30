@@ -16,6 +16,7 @@ from django.urls import reverse
 @login_required(login_url='/login')
 def show_main(request):
     filter_type = request.GET.get("filter", "all")  
+    category_filter = request.GET.get("category")
     if filter_type == "all":
         product_list = Product.objects.all()
     elif filter_type == "featured":
@@ -23,13 +24,13 @@ def show_main(request):
     else:
         product_list = Product.objects.filter(user=request.user)
     
+        
     context = {
         'name': 'Matthew Nathanael',
         'class': 'PBP E',
         'nama_aplikasi': 'SP Sportswear',
         'product_list': product_list,   
-        'last_login': request.COOKIES.get('last_login', 'Never')
-        
+        'last_login': request.COOKIES.get('last_login', 'Never'),  
     }
 
     return render(request, "main.html", context)
