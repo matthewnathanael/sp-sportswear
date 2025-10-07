@@ -192,7 +192,7 @@
             : CREATE_ENDPOINT;
         const actionText = isUpdate ? 'Updating' : 'Saving';
         const originalButtonText = submitProductButton.textContent;
-        const csrfToken = productForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
 
         // Bersihkan error sebelum submit
         document.querySelectorAll('#productForm .text-red-600').forEach(el => {
@@ -207,10 +207,6 @@
         try {
             const response = await fetch(endpoint, {
                 method: "POST",
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    // Content-Type tidak perlu disetel untuk FormData
-                },
                 body: new FormData(productForm),
             });
 
