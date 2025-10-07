@@ -9,9 +9,13 @@ class ProductForm(ModelForm):
         fields = ["name", "price", "description", "thumbnail", "category", "is_featured", "stock", "rating", "brand"]
         
         
-        def clean_title(self):
-            name = self.cleaned_data["name"]
-            return strip_tags(name)
-        def clean_content(self):
-            description = self.cleaned_data["description"]
-            return strip_tags(description)
+     
+    def clean_name(self):
+        """Menghilangkan tag HTML dari field 'name' (was clean_title)."""
+        name = self.cleaned_data["name"]
+        return strip_tags(name)
+        
+    def clean_description(self):
+        """Menghilangkan tag HTML dari field 'description' (was clean_content)."""
+        description = self.cleaned_data["description"]
+        return strip_tags(description)
