@@ -73,7 +73,13 @@ def add_product_entry_ajax(request):
     if form.is_valid():
         new_product = form.save(commit = False)
         new_product.user = request.user # Menggunakan request.user karena @login_required
-        new_product.save()
+        
+        # FIX: Explicitly handle the is_featured checkbox
+        # If the checkbox is unchecked, it won't be in request.POST, and we need to ensure it's False.
+        # This prevents a potential unhandled exception when saving the ModelForm instance.
+        new_product.is_featured = request.POST.get("is_featured") == 'on'
+        
+        new_product.save() # Saves the product with the correct is_featured value
   
         return JsonResponse({"status": "CREATED", "message": "Produk berhasil ditambahkan!"}, status=201)
     
