@@ -16,31 +16,12 @@
                 <p class="text-gray-700">Welcome back to SP Sportswear</p>
             </div>
 
-            {% if form.non_field_errors %}
-            <div class="mb-6">
-                {% for error in form.non_field_errors %}
-                <div class="px-4 py-3 rounded-md text-sm border bg-red-100 border-red-300 text-red-700">
-                    {{ error }}
-                </div>
-                {% endfor %}
+            <div id="general-error"
+                class="px-4 py-3 rounded-md text-sm border bg-red-100 border-red-300 text-red-700 mb-6 hidden">
+                <p id="general-error-message"></p>
             </div>
-            {% endif %}
 
-            {% if form.errors %}
-            <div class="mb-6">
-                {% for field, errors in form.errors.items %}
-                {% if field != '__all__' %}
-                {% for error in errors %}
-                <div class="px-4 py-3 rounded-md text-sm border bg-red-100 border-red-300 text-red-700 mb-2">
-                    <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <form method="POST" action="" class="space-y-6">
+            <form id="loginForm" method="POST" action="{% url 'main:login_ajax' %}" class="space-y-6">
                 {% csrf_token %}
 
                 <div>
@@ -48,6 +29,7 @@
                     <input id="username" name="username" type="text" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-stone-700 transition-colors"
                         placeholder="Enter your username">
+                    <p id="error-username" class="mt-1 text-sm text-red-600 hidden"></p>
                 </div>
 
                 <div>
@@ -55,32 +37,14 @@
                     <input id="password" name="password" type="password" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-stone-700 transition-colors"
                         placeholder="Enter your password">
+                    <p id="error-password" class="mt-1 text-sm text-red-600 hidden"></p>
                 </div>
 
-                <button type="submit"
+                <button type="submit" id="loginButton"
                     class="w-full bg-stone-700 text-white font-medium py-3 px-4 rounded-md hover:bg-stone-800 transition-colors">
                     Sign In
                 </button>
             </form>
-
-            {% if messages %}
-            <div class="mt-6">
-                {% for message in messages %}
-                <div class="
-                px-4 py-3 rounded-md text-sm border
-                {% if message.tags == 'success' %}
-                  bg-stone-100 border-stone-300 text-stone-700
-                {% elif message.tags == 'error' %}
-                  bg-red-100 border-red-300 text-red-700
-                {% else %}
-                  bg-amber-100 border-amber-300 text-stone-700
-                {% endif %}
-              ">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
             <div class="mt-6 text-center pt-6 border-t border-gray-200">
                 <p class="text-gray-700 text-sm">
@@ -93,4 +57,99 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Pastikan fungsi showToast sudah tersedia dari base.html
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const generalError = document.getElementById('general-error');
+    const generalErrorMessage = document.getElementById('general-error-message');
+
+    // Utility untuk membersihkan error
+    function clearErrors() {
+        generalError.classList.add('hidden');
+        generalErrorMessage.textContent = '';
+        document.querySelectorAll('#loginForm .text-red-600').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+    }
+
+    // Fungsi untuk menampilkan error per field
+    function displayErrors(errors) {
+        let nonFieldErrors = [];
+        for (const [field, errorList] of Object.entries(errors)) {
+            const errorElement = document.getElementById(`error-${field}`);
+            const errorText = errorList.join(' ');
+            if (field === '__all__') {
+                nonFieldErrors.push(errorText);
+            } else if (errorElement) {
+                errorElement.textContent = errorText;
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        // Tampilkan error non-field (e.g., kredensial salah)
+        if (nonFieldErrors.length > 0) {
+            generalErrorMessage.textContent = nonFieldErrors.join(' ');
+            generalError.classList.remove('hidden');
+        }
+    }
+
+
+    loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        clearErrors(); // Bersihkan error sebelumnya
+
+        const originalButtonText = loginButton.textContent;
+        loginButton.textContent = 'Signing In...';
+        loginButton.disabled = true;
+
+        const data = {
+            username: loginForm.username.value,
+            password: loginForm.password.value,
+        };
+
+        try {
+            const response = await fetch(loginForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': loginForm.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json', // Kirim data sebagai JSON
+                },
+                body: JSON.stringify(data)
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                // Sukses (Status 200 dari login_ajax)
+                showToast('Success', responseData.message || 'Login successful!', 'success');
+                // Redirect ke halaman utama setelah toast muncul
+                setTimeout(() => {
+                    window.location.href = "{% url 'main:show_main' %}";
+                }, 1000);
+            } else {
+                // Error (Status 400 dari login_ajax)
+                showToast('Error', responseData.message || 'Login failed.', 'error');
+
+                // Tampilkan error per-field atau non-field error
+                if (responseData.errors) {
+                    displayErrors(responseData.errors);
+                } else if (responseData.message) {
+                    // Jika error bukan per-field, tampilkan di general error
+                    generalErrorMessage.textContent = responseData.message;
+                    generalError.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('AJAX Error:', error);
+            showToast('Error', 'Failed to connect to server.', 'error');
+        } finally {
+            loginButton.textContent = originalButtonText;
+            loginButton.disabled = false;
+        }
+    });
+</script>
 {% endblock content %}

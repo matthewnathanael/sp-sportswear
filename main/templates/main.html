@@ -7,13 +7,30 @@
 
 {% block content %}
 {% include 'navbar.html' %}
+{% include 'modal.html' %}
+
 <div class="bg-amber-50 w-full pt-16 min-h-screen">
     <div class="w-full mx-auto px-6 lg:px-12 py-8">
-
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ nama_aplikasi }}</h1>
             <p class="text-gray-700">Selamat datang, {{ name }}</p>
         </div>
+
+        <div class="flex flex-wrap items-center gap-4 mb-4">
+            <button onclick="openCreateModal()"
+                class="inline-flex items-center px-4 py-2 bg-stone-700 text-white font-semibold outline outline-2 outline-stone-700 outline-offset-[-2px] rounded-md hover:bg-stone-800 transition-colors">
+                + Add Product
+            </button>
+            <button onclick="fetchProductsFromServer(true)" id="refreshButton"
+                class="inline-flex items-center px-4 py-2 bg-amber-50 text-stone-700 font-semibold border-2 border-stone-700 rounded-md hover:bg-amber-200 transition-colors">
+                <svg id="refresh-icon" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h5M20 20v-5h-5M4 13a8 8 0 1016 0" />
+                </svg>
+                Refresh List
+            </button>
+        </div>
+
 
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 
             bg-white rounded-lg p-4 
@@ -22,17 +39,17 @@
             transition-shadow duration-150 ease-out">
 
             <div class="flex space-x-3 mb-4 sm:mb-0">
-                <a href="?filter=all"
-                    class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
+                <a href="#" id="filter-all"
+                    class="bg-stone-700 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     All Products
                 </a>
 
-                <a href="?filter=featured"
-                    class="{% if request.GET.filter == 'featured' %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
+                <a href="#" id="filter-featured"
+                    class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     Featured Products
                 </a>
-                <a href="?filter=my"
-                    class="{% if request.GET.filter == 'my' %} bg-stone-700 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
+                <a href="#" id="filter-my"
+                    class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white">
                     My Products
                 </a>
             </div>
@@ -42,34 +59,491 @@
                 <div class="text-sm text-gray-700">
                     Sesi terakhir login: **{{ last_login }}**
                 </div>
-                <a href="{% url 'main:logout' %}"
+                <button onclick="logoutViaAjax()"
                     class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-medium">
                     Logout
-                </a>
+                </button>
                 {% endif %}
             </div>
         </div>
-
-        {% if not product_list %}
-        <div class="bg-white rounded-lg border border-amber-200 p-12 text-center">
+        <div id="loading-state" class="bg-white rounded-lg border border-amber-200 p-12 text-center hidden">
+            <svg class="animate-spin h-8 w-8 text-stone-700 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <p class="text-gray-700 mt-3">Memuat produk...</p>
+        </div>
+        <div id="error-state" class="bg-red-100 rounded-lg border border-red-400 text-red-700 p-4 mb-4 hidden"
+            role="alert">
+            <p class="font-bold">Error!</p>
+            <p>Gagal memuat data produk. Coba refresh halaman atau periksa koneksi internet Anda.</p>
+        </div>
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+        </div>
+        <div id="empty-state" class="bg-white rounded-lg border border-amber-200 p-12 text-center hidden">
             <div class="w-32 h-32 mx-auto mb-4">
                 <img src="{% static 'image/no-product.png' %}" alt="No products available"
                     class="w-full h-full object-contain">
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data produk.</h3>
             <p class="text-gray-700 mb-6">Mulai tambahkan produk Anda ke dalam sistem.</p>
-            <a href="{% url 'main:create_product' %}"
+            <button onclick="openCreateModal()"
                 class="inline-flex items-center px-4 py-2 bg-stone-700 text-white rounded-md hover:bg-stone-800 transition-colors">
                 + Add Product
-            </a>
+            </button>
         </div>
-        {% else %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for product in product_list %}
-            {% include 'card_product.html' with product=product %}
-            {% endfor %}
-        </div>
-        {% endif %}
+
     </div>
 </div>
+
+<div id="deleteConfirmationModal"
+    class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl w-11/12 sm:w-2/5 max-w-lg p-6 sm:p-8 
+             border-2 border-stone-700 
+             shadow-[6px_6px_0_0_rgba(68,64,60,1)] 
+             transition-shadow duration-150 ease-out">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">Confirm Deletion</h3>
+        <p class="text-gray-700 mb-6" id="deleteConfirmationMessage">
+            Are you sure you want to delete this product? This action cannot be undone.
+        </p>
+        <div class="flex justify-end space-x-4">
+            <button onclick="hideDeleteConfirmationModal()"
+                class="px-4 py-2 border-2 border-stone-700 text-stone-700 rounded-md font-medium bg-amber-100 hover:bg-amber-200 transition-colors">
+                Cancel
+            </button>
+            <button onclick="executeDeleteProduct()" id="deleteProductButton"
+                class="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 transition-colors">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Configuration
+    const PRODUCTS_API_ENDPOINT = "{% url 'main:show_json' %}";
+    const DELETE_BASE_ENDPOINT = `{% url 'main:delete_product_ajax' '00000000-0000-0000-0000-000000000000' %}`;
+    const LOGOUT_ENDPOINT = "{% url 'main:logout' %}";
+    const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+    // Ambil CSRF token dari input hidden di navbar (atau di tempat lain)
+    const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // DOM Elements
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const emptyStateDisplay = document.getElementById('empty-state');
+    const productGridContainer = document.getElementById('product-grid');
+    const refreshButton = document.getElementById('refreshButton');
+    const refreshIcon = document.getElementById('refresh-icon');
+
+    const showAllProductsButton = document.getElementById('filter-all');
+    const showFeaturedProductsButton = document.getElementById('filter-featured');
+    const showMyProductsButton = document.getElementById('filter-my');
+
+    const deleteModal = document.getElementById('deleteConfirmationModal');
+    const deleteMessage = document.getElementById('deleteConfirmationMessage');
+    const deleteButton = document.getElementById('deleteProductButton');
+
+
+    // State Variables
+    let activeFilter = 'all'; // 'all', 'featured', or 'my'
+    let allProductsData = [];
+    let productIdToDelete = null;
+
+    // --- UTILITY FUNCTIONS ---
+
+    // Function to safely escape quotes in a string for use in a JavaScript function call argument in HTML.
+    function escapeJsString(s) {
+        if (typeof s !== 'string') return '';
+        // Escapes backslashes, single quotes, double quotes, and newlines
+        return s.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    }
+
+    function openCreateModal() {
+        // Fungsi ini di-expose dari modal.html
+        window.resetModal();
+        window.showModal();
+    }
+
+    // Modal Confirmation for Delete
+    function confirmDeleteProduct(id, name) {
+        productIdToDelete = id;
+        // name sudah di-escape di card rendering menggunakan |escapejs
+        // Kita gunakan .replace(/'/g, "\\'") pada JS untuk mengamankan tanda kutip di dalam string JS literal,
+        // tetapi karena di card_product.html sudah menggunakan |escapejs, kita cukup tampilkan.
+        deleteMessage.innerHTML = `Apakah Anda yakin ingin menghapus produk **${name}**? Aksi ini tidak dapat dibatalkan.`;
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+    }
+
+    function hideDeleteConfirmationModal() {
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+        productIdToDelete = null;
+    }
+
+    async function executeDeleteProduct() {
+        if (!productIdToDelete) return;
+
+        const deleteEndpoint = DELETE_BASE_ENDPOINT.replace(UUID_PLACEHOLDER, productIdToDelete);
+        const originalButtonText = deleteButton.textContent;
+
+        deleteButton.textContent = 'Deleting...';
+        deleteButton.disabled = true;
+
+        try {
+            const response = await fetch(deleteEndpoint, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': CSRF_TOKEN,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + productIdToDelete
+            });
+
+            if (response.status === 200) {
+                // Success
+                showToast('Success', 'Produk berhasil dihapus.', 'success');
+                // Refresh list
+                document.dispatchEvent(new CustomEvent('productUpdated'));
+            } else {
+                // Error (e.g., 404 from HttpResponseNotFound in views.py)
+                const errorText = await response.text();
+                showToast('Error', errorText || 'Gagal menghapus produk.', 'error');
+            }
+        } catch (error) {
+            console.error('Delete AJAX error:', error);
+            showToast('Error', 'Gagal terhubung ke server untuk menghapus produk.', 'error');
+        } finally {
+            hideDeleteConfirmationModal();
+            deleteButton.textContent = originalButtonText;
+            deleteButton.disabled = false;
+        }
+    }
+
+    async function logoutViaAjax() {
+        try {
+            const response = await fetch(LOGOUT_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': CSRF_TOKEN,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast('Success', data.message || 'Logout successful!', 'success');
+                // Redirect to login after successful AJAX logout
+                setTimeout(() => {
+                    window.location.href = "{% url 'main:login' %}";
+                }, 1000);
+            } else {
+                showToast('Error', data.message || 'Logout failed.', 'error');
+            }
+        } catch (error) {
+            console.error('Logout AJAX error:', error);
+            showToast('Error', 'Failed to connect to server for logout.', 'error');
+        }
+    }
+
+    // Update filter button appearance
+    function updateFilterButtonsAppearance() {
+        if (!showAllProductsButton || !showFeaturedProductsButton || !showMyProductsButton) return;
+
+        // Base classes
+        const activeClass = 'bg-stone-700 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-800';
+        const inactiveClass = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-stone-700 hover:text-white';
+
+        // Reset all
+        showAllProductsButton.className = inactiveClass;
+        showFeaturedProductsButton.className = inactiveClass;
+        showMyProductsButton.className = inactiveClass;
+
+        // Set active
+        if (activeFilter === 'all') {
+            showAllProductsButton.className = activeClass;
+        } else if (activeFilter === 'featured') {
+            showFeaturedProductsButton.className = activeClass;
+        } else if (activeFilter === 'my') {
+            showMyProductsButton.className = activeClass;
+        }
+    }
+
+    // Show/hide page sections (Loading, Error, Empty, Grid)
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingState.classList.toggle('hidden', !showLoading);
+        errorState.classList.toggle('hidden', !showError);
+        emptyStateDisplay.classList.toggle('hidden', !showEmpty);
+        productGridContainer.classList.toggle('hidden', !showGrid);
+
+        // Ensure grid classes are correct when showing grid
+        if (showGrid) {
+            productGridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+        }
+    }
+
+    // Get readable category name
+    function getReadableCategoryName(categoryCode) {
+        const categoryMapping = {
+            jersey: 'Jersey',
+            sweater: 'Sweater',
+            baju: 'Baju',
+            celana: 'Celana',
+            sepatu: 'Sepatu',
+            tas: 'Tas',
+            sleeve: 'Sleeves',
+            'kaos kaki': 'Kaos Kaki',
+            lain: 'Lainnya',
+            update: 'Update',
+        };
+        return categoryMapping[categoryCode] || categoryCode;
+    }
+
+    // Function to format price as Rupiah
+    function formatRupiah(number) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(number).replace('IDR', 'Rp');
+    }
+
+    // --- CARD RENDERING ---
+
+    // Create product card element (replicate templates/card_product.html)
+    function buildProductCardElement(item) {
+        const articleElement = document.createElement('article');
+        articleElement.className = 'bg-white rounded-xl border border-gray-200 shadow-lg transform transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl hover:border-amber-400 overflow-hidden flex flex-col';
+
+        // --- SANITASI DATA ---
+        // Sanitasi semua data yang berasal dari pengguna/API sebelum digunakan
+        const productName = DOMPurify.sanitize(item.name || '');
+        const productDescriptionRaw = item.description || '';
+        const productThumbnail = DOMPurify.sanitize(item.thumbnail || '');
+        const productCategory = DOMPurify.sanitize(item.category || '');
+        const productRating = item.rating;
+
+        // Data yang digunakan untuk tampilan
+        const itemId = DOMPurify.sanitize(item.id);
+        const detailLink = `{% url 'main:show_products' '00000000-0000-0000-0000-000000000000' %}`.replace(UUID_PLACEHOLDER, itemId);
+
+        const categoryLabel = getReadableCategoryName(productCategory);
+        const isFeatured = item.is_featured;
+        const formattedPrice = formatRupiah(item.price);
+        const hasRating = productRating !== null && productRating !== 0;
+
+        // Escaping product name untuk argumen fungsi JavaScript
+        const safeProductNameForJs = escapeJsString(productName);
+
+        // Potong deskripsi dan sanitasi setelah dipotong (lebih aman)
+        const displayDescription = DOMPurify.sanitize(productDescriptionRaw.substring(0, 100) + (productDescriptionRaw.length > 100 ? '...' : ''));
+
+        // Thumbnail HTML
+        const ThumbnailHtml = item.thumbnail
+            ? `<img src='${productThumbnail}' alt='${productName}' class='w-full h-full object-cover'>`
+            : `<div class='w-full h-full bg-gray-200 flex items-center justify-center'>
+            <span class='text-gray-500'>No Image</span>
+        </div>`;
+
+
+        // Rating HTML
+        const starIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>`;
+
+        // Sanitasi Rating (hanya jika berupa angka/string dari API, rating adalah float di model)
+        const sanitizedRating = DOMPurify.sanitize(productRating);
+
+        const RatingHtml = hasRating
+            ? `<p class="text-sm text-gray-600 flex items-center space-x-1">
+            ${starIcon}
+            <span class="font-bold text-gray-900">${sanitizedRating}</span>
+        </p>`
+            : `<p class="text-sm text-gray-600">No Rating</p>`;
+
+        // Featured Badge
+        const featuredBadge = isFeatured
+            ? `<span class="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-md shadow-md">Featured</span>`
+            : '';
+
+        // Edit/Delete Buttons HTML
+        const isAuthenticated = CURRENT_USER_ID !== '';
+        const isOwner = isAuthenticated && (String(CURRENT_USER_ID) === String(item.user_id));
+
+        const EditDeleteButtons = isOwner
+            ? `<div class="flex space-x-3">
+            <button type="button" onclick="openEditModal('${itemId}')"
+                class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
+                Edit
+            </button>
+            <button type="button" onclick="confirmDeleteProduct('${itemId}', '${safeProductNameForJs}')"
+                class="text-red-600 hover:text-red-700 text-sm transition-colors">
+                Delete
+            </button>
+        </div>`
+            : '';
+
+        // Final Card HTML
+        const CompleteCardHtml = `
+        <div class="aspect-[16/9] relative overflow-hidden">
+            ${ThumbnailHtml}
+            <div class="absolute top-3 left-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                    bg-amber-100 text-stone-800 border border-amber-300">
+                    ${categoryLabel}
+                </span>
+            </div>
+            ${featuredBadge}
+        </div>
+
+        <div class="p-4 sm:p-5 flex-grow flex flex-col">
+            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                ${RatingHtml}
+                <span class="text-xl font-bold text-stone-700 font-price">
+                    ${formattedPrice}
+                </span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                <a href="${detailLink}" class="hover:text-stone-700 transition-colors">
+                    ${productName}
+                </a>
+            </h3>
+
+            <p class="text-gray-700 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow">
+                ${displayDescription}
+            </p>
+
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+                <a href="${detailLink}" class="inline-flex items-center px-4 py-2 bg-stone-700 text-white text-sm rounded-md font-medium 
+                        hover:bg-stone-800 transition-colors shadow-md">
+                    View Details
+                </a>
+                ${EditDeleteButtons}
+            </div>
+        </div>
+    `;
+
+
+        // Gunakan DOMPurify.sanitize pada seluruh HTML string sebagai langkah pengamanan terakhir
+        const cleanCardHtml = DOMPurify.sanitize(CompleteCardHtml, {
+            // Tambahkan 'onclick' ke daftar atribut yang diizinkan
+            ADD_ATTR: ['onclick']
+        });
+        articleElement.innerHTML = cleanCardHtml;
+        return articleElement;
+    }
+
+    // Render all product cards
+    function renderAllProductCards(products) {
+        productGridContainer.innerHTML = '';
+        products.forEach(product => {
+            const cardElement = buildProductCardElement(product);
+            productGridContainer.appendChild(cardElement);
+        });
+    }
+
+    // Filter and display products
+    function filterAndDisplayProducts() {
+        updateFilterButtonsAppearance();
+
+        let filteredProducts = allProductsData;
+
+        if (activeFilter === 'featured') {
+            filteredProducts = allProductsData.filter(product => product.is_featured === true);
+        } else if (activeFilter === 'my') {
+            if (!CURRENT_USER_ID) {
+                filteredProducts = [];
+            } else {
+                filteredProducts = allProductsData.filter(product => String(product.user_id) === String(CURRENT_USER_ID));
+            }
+        }
+
+        if (filteredProducts.length === 0) {
+            displayPageSection({ showLoading: false, showEmpty: true, showGrid: false });
+
+            const emptyStateTitle = emptyStateDisplay.querySelector('h3');
+            const emptyStateDesc = emptyStateDisplay.querySelector('p');
+
+            if (activeFilter === 'my' && CURRENT_USER_ID) {
+                if (emptyStateTitle) emptyStateTitle.textContent = 'Anda belum menambahkan produk.';
+                if (emptyStateDesc) emptyStateDesc.textContent = 'Klik tombol di bawah untuk mulai menambahkan produk Anda.';
+            } else {
+                if (emptyStateTitle) emptyStateTitle.textContent = 'Belum ada data produk.';
+                if (emptyStateDesc) emptyStateDesc.textContent = 'Mulai tambahkan produk Anda ke dalam sistem.';
+            }
+
+        } else {
+            renderAllProductCards(filteredProducts);
+            displayPageSection({ showLoading: false, showGrid: true, showEmpty: false });
+        }
+    }
+
+    // Fetch products data from server (Fungsi Refresh)
+    async function fetchProductsFromServer(isRefresh = false) {
+        // --- START: Setup/Animation ---
+        // Logika ini dijalankan HANYA saat tombol diklik (sebelum try)
+        if (!isRefresh) {
+            displayPageSection({ showLoading: true, showGrid: false, showEmpty: false, showError: false });
+        }
+        refreshButton.disabled = true;
+        refreshIcon.classList.add('animate-spin'); // 🌟 Mulai animasi
+
+        try {
+            const response = await fetch(PRODUCTS_API_ENDPOINT, {
+                headers: { 'Accept': 'application/json' },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch product data from server');
+            }
+
+            const productsData = await response.json();
+            allProductsData = productsData || [];
+
+            filterAndDisplayProducts();
+
+        } catch (error) {
+            console.error('Error loading products:', error);
+            displayPageSection({ showLoading: false, showError: true });
+        } finally {
+            // --- END: Cleanup/Animation Stop ---
+            // Logika ini SELALU dijalankan setelah try atau catch selesai
+            refreshButton.disabled = false;
+            refreshIcon.classList.remove('animate-spin'); // 🛑 Hentikan animasi
+        }
+    }
+
+    // --- EVENT HANDLERS ---
+
+    function handleFilterClick(e) {
+        e.preventDefault();
+        activeFilter = e.target.id.replace('filter-', '');
+        filterAndDisplayProducts();
+    }
+
+    // --- INITIALIZATION ---
+
+    function initializeProductPage() {
+        // Tambahkan event listeners
+        showAllProductsButton.addEventListener('click', handleFilterClick);
+        showFeaturedProductsButton.addEventListener('click', handleFilterClick);
+        showMyProductsButton.addEventListener('click', handleFilterClick);
+
+        fetchProductsFromServer();
+    }
+
+    // Mulai aplikasi saat DOM selesai dimuat
+    document.addEventListener('DOMContentLoaded', initializeProductPage);
+    // Tambahkan event listener untuk mendeteksi update (dari modal.html/delete logic)
+    document.addEventListener('productUpdated', function () {
+        fetchProductsFromServer(true);
+    });
+
+
+</script>
 {% endblock content %}

@@ -18,31 +18,12 @@
                     <p class="text-gray-700">Create your {{ nama_aplikasi }} account</p>
                 </div>
 
-                {% if form.non_field_errors %}
-                <div class="mb-6">
-                    {% for error in form.non_field_errors %}
-                    <div class="px-4 py-3 rounded text-sm border bg-red-100 border-red-300 text-red-700">
-                        {{ error }}
-                    </div>
-                    {% endfor %}
+                <div id="general-error"
+                    class="px-4 py-3 rounded-md text-sm border bg-red-100 border-red-300 text-red-700 mb-6 hidden">
+                    <p id="general-error-message"></p>
                 </div>
-                {% endif %}
 
-                {% if form.errors %}
-                <div class="mb-6">
-                    {% for field, errors in form.errors.items %}
-                    {% if field != '__all__' %}
-                    {% for error in errors %}
-                    <div class="px-4 py-3 rounded text-sm border bg-red-100 border-red-300 text-red-700 mb-2">
-                        <strong>{{ field|title }}:</strong> {{ error }}
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <form method="POST" action="" class="space-y-5">
+                <form id="registerForm" method="POST" action="{% url 'main:register_ajax' %}" class="space-y-5">
                     {% csrf_token %}
 
                     <div>
@@ -50,6 +31,7 @@
                         <input id="username" name="username" type="text" required
                             class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-stone-700 transition duration-200"
                             placeholder="Choose a username">
+                        <p id="error-username" class="mt-1 text-sm text-red-600 hidden"></p>
                     </div>
 
                     <div>
@@ -57,6 +39,7 @@
                         <input id="password1" name="password1" type="password" required
                             class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-stone-700 transition duration-200"
                             placeholder="Create a password">
+                        <p id="error-password1" class="mt-1 text-sm text-red-600 hidden"></p>
                     </div>
 
                     <div>
@@ -65,32 +48,14 @@
                         <input id="password2" name="password2" type="password" required
                             class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-stone-700 transition duration-200"
                             placeholder="Confirm your password">
+                        <p id="error-password2" class="mt-1 text-sm text-red-600 hidden"></p>
                     </div>
 
-                    <button type="submit"
+                    <button type="submit" id="registerButton"
                         class="w-full bg-stone-700 text-white font-medium py-3 px-4 rounded hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-700 focus:ring-offset-2 transition duration-200">
                         Create Account
                     </button>
                 </form>
-
-                {% if messages %}
-                <div class="mt-6">
-                    {% for message in messages %}
-                    <div class="
-                px-4 py-3 rounded text-sm border
-                {% if message.tags == 'success' %}
-                  bg-stone-100 border-stone-300 text-stone-700
-                {% elif message.tags == 'error' %}
-                  bg-red-100 border-red-300 text-red-700
-                {% else %}
-                  bg-amber-100 border-amber-300 text-stone-700
-                {% endif %}
-              ">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
 
                 <div class="mt-6 text-center pt-6 border-t border-gray-200">
                     <p class="text-gray-700 text-sm">
@@ -104,4 +69,102 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Pastikan fungsi showToast sudah tersedia dari base.html
+    const registerForm = document.getElementById('registerForm');
+    const registerButton = document.getElementById('registerButton');
+    const generalError = document.getElementById('general-error');
+    const generalErrorMessage = document.getElementById('general-error-message');
+
+    // Utility untuk membersihkan error
+    function clearErrors() {
+        generalError.classList.add('hidden');
+        generalErrorMessage.textContent = '';
+        document.querySelectorAll('#registerForm .text-red-600').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+    }
+
+    // Fungsi untuk menampilkan error per field
+    function displayErrors(errors) {
+        let nonFieldErrors = [];
+        for (const [field, errorList] of Object.entries(errors)) {
+            const errorElement = document.getElementById(`error-${field}`);
+            const errorText = errorList.join(' ');
+
+            if (field === '__all__') {
+                nonFieldErrors.push(errorText);
+            } else if (errorElement) {
+                errorElement.textContent = errorText;
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        // Tampilkan error non-field
+        if (nonFieldErrors.length > 0) {
+            generalErrorMessage.textContent = nonFieldErrors.join(' ');
+            generalError.classList.remove('hidden');
+        }
+    }
+
+
+    registerForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        clearErrors(); // Bersihkan error sebelumnya
+
+        const originalButtonText = registerButton.textContent;
+        registerButton.textContent = 'Creating Account...';
+        registerButton.disabled = true;
+
+        // Data dikirim sebagai JSON (sesuai field di UserCreationForm)
+        const data = {
+            username: registerForm.username.value,
+            password1: registerForm.password1.value,
+            password2: registerForm.password2.value,
+        };
+
+        try {
+            const response = await fetch(registerForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': registerForm.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json', // Kirim data sebagai JSON
+                },
+                body: JSON.stringify(data)
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                // Sukses (Status 201 dari register_ajax)
+                showToast('Success', responseData.message || 'Account created successfully!', 'success');
+                // Redirect ke halaman login setelah toast muncul
+                setTimeout(() => {
+                    window.location.href = "{% url 'main:login' %}";
+                }, 1000);
+            } else {
+                // Error (Status 400 dari register_ajax)
+                showToast('Error', responseData.message || 'Registration failed.', 'error');
+
+                // Tampilkan error per-field
+                if (responseData.errors) {
+                    displayErrors(responseData.errors);
+                } else if (responseData.message) {
+                    // Jika error bukan per-field, tampilkan di general error
+                    generalErrorMessage.textContent = responseData.message;
+                    generalError.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('AJAX Error:', error);
+            showToast('Error', 'Failed to connect to server.', 'error');
+        } finally {
+            registerButton.textContent = originalButtonText;
+            registerButton.disabled = false;
+        }
+    });
+</script>
 {% endblock content %}

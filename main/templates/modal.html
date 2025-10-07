@@ -1,0 +1,294 @@
+<div id="crudModal"
+    class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
+    <div id="crudModalContent" class="bg-white rounded-xl shadow-2xl w-11/12 sm:w-4/5 md:w-3/5 lg:w-2/5 max-h-screen overflow-y-auto 
+             border-2 border-stone-700 
+             shadow-[6px_6px_0_0_rgba(68,64,60,1)] 
+             transition-shadow duration-150 ease-out">
+
+        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-amber-50">
+            <div>
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-900">
+                    Add New Product
+                </h3>
+                <p id="modalSubtitle" class="text-sm text-gray-700 mt-1">Lengkapi detail produk Anda untuk dijual.</p>
+            </div>
+            <button type="button"
+                class="text-gray-400 bg-transparent hover:bg-red-100 hover:text-red-700 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center transition-colors"
+                onclick="hideModal()">
+                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+        </div>
+
+        <div class="px-6 py-4 space-y-5 form-style">
+            <form id="productForm">
+                <input type="hidden" id="product-id-field" name="id">
+                {% csrf_token %}
+
+                <div>
+                    <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                    <input type="text" id="productName" name="name"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        placeholder="e.g., SP Sport T-shirt" required>
+                    <p id="error-name" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="productPrice" class="block text-sm font-medium text-gray-700 mb-1">Price (Rp)</label>
+                    <input type="number" id="productPrice" name="price" min="0"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        placeholder="e.g., 150000" required>
+                    <p id="error-price" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="productDescription"
+                        class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="productDescription" name="description" rows="3"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        placeholder="Describe your product here..." required></textarea>
+                    <p id="error-description" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="productThumbnail" class="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL
+                        (Image Link)</label>
+                    <input type="url" id="productThumbnail" name="thumbnail"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        placeholder="https://example.com/image.jpg">
+                    <p id="error-thumbnail" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="productCategory" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="productCategory" name="category"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        required>
+                        <option value="">Choose a category</option>
+                        <option value="jersey">Jersey</option>
+                        <option value="sweater">Sweater</option>
+                        <option value="baju">Baju</option>
+                        <option value="celana">Celana</option>
+                        <option value="sepatu">Sepatu</option>
+                        <option value="tas">Tas</option>
+                        <option value="sleeve">Sleeves</option>
+                        <option value="kaos kaki">Kaos Kaki</option>
+                        <option value="lain">Lainnya</option>
+                        <option value="update" disabled>Update (Default)</option>
+                    </select>
+                    <p id="error-category" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="productStock" class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                        <input type="number" id="productStock" name="stock" min="0"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                            placeholder="e.g., 50" required>
+                        <p id="error-stock" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+                    <div>
+                        <label for="productRating" class="block text-sm font-medium text-gray-700 mb-1">Rating
+                            (0-10)</label>
+                        <input type="number" id="productRating" name="rating" min="0" max="10" step="0.1"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                            placeholder="e.g., 10">
+                        <p id="error-rating" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="productBrand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <input type="text" id="productBrand" name="brand"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-stone-700 focus:ring-stone-700 transition duration-200"
+                        placeholder="e.g., Nike, Adidas, etc.">
+                    <p id="error-brand" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+
+                <div>
+                    <div class="flex items-center">
+                        <input id="is_featured" name="is_featured" type="checkbox"
+                            class="w-4 h-4 text-stone-700 bg-gray-100 border-gray-300 rounded focus:ring-stone-500">
+                        <label for="is_featured" class="ml-2 text-sm font-medium text-gray-900">Mark as Featured
+                            Product</label>
+                    </div>
+                    <p id="error-is_featured" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+            </form>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 p-6 border-t border-gray-200 rounded-b">
+            <button type="button" id="cancelButton"
+                class="order-2 sm:order-1 px-6 py-3 border-2 border-stone-700 text-stone-700 rounded-md font-medium bg-amber-100 hover:bg-amber-200 hover:border-stone-800 transition-colors text-center"
+                onclick="hideModal()">Cancel</button>
+            <button type="submit" id="submitProduct" form="productForm"
+                class="order-1 sm:order-2 flex-1 bg-stone-700 text-white px-6 py-3 rounded-md font-medium hover:bg-stone-800 transition-colors">Save
+                Product</button>
+        </div>
+    </div>
+</div>
+<script>
+    // Constants
+    const UUID_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
+    const CREATE_ENDPOINT = "{% url 'main:add_product_entry_ajax' %}";
+    const EDIT_ENDPOINT_TEMPLATE = "{% url 'main:edit_product_entry_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    const FETCH_URL_TEMPLATE = `{% url 'main:show_json_by_id' '00000000-0000-0000-0000-000000000000' %}`;
+
+
+    // DOM Elements
+    const modal = document.getElementById('crudModal');
+    const modalContent = document.getElementById('crudModalContent');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const productIdField = document.getElementById('product-id-field');
+    const productForm = document.getElementById('productForm');
+    const submitProductButton = document.getElementById('submitProduct');
+
+    // Utility untuk membersihkan form dan error
+    function resetModal() {
+        productForm.reset();
+        productIdField.value = '';
+        modalTitle.textContent = 'Add New Product';
+        modalSubtitle.textContent = 'Lengkapi detail produk Anda untuk dijual.';
+        submitProductButton.textContent = 'Add Product';
+        // Hapus semua pesan error
+        document.querySelectorAll('#productForm .text-red-600').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+    }
+
+    function showModal() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex'); // Tambahkan flex untuk memastikan centering
+        setTimeout(() => {
+            modalContent.classList.remove('opacity-0', 'scale-95');
+            modalContent.classList.add('opacity-100', 'scale-100');
+        }, 50);
+    }
+
+    function hideModal() {
+        modalContent.classList.remove('opacity-100', 'scale-100');
+        modalContent.classList.add('opacity-0', 'scale-95');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            resetModal();
+        }, 150);
+    }
+
+    // --- Fungsi Utama Submit AJAX (Create/Update) ---
+    async function submitProductForm() {
+        const productId = productIdField.value;
+        const isUpdate = !!productIdField.value;
+        const endpoint = isUpdate
+            ? EDIT_ENDPOINT_TEMPLATE.replace('00000000-0000-0000-0000-000000000000', productId) // Ganti literal string
+            : CREATE_ENDPOINT;
+        const actionText = isUpdate ? 'Updating' : 'Saving';
+        const originalButtonText = submitProductButton.textContent;
+
+        // Bersihkan error sebelum submit
+        document.querySelectorAll('#productForm .text-red-600').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+
+        // Tampilkan loading state
+        submitProductButton.textContent = `${actionText}...`;
+        submitProductButton.disabled = true;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                body: new FormData(productForm),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Sukses
+                hideModal();
+                showToast('Success', data.message, 'success');
+                // Trigger refresh pada halaman utama
+                document.dispatchEvent(new CustomEvent('productUpdated'));
+            } else {
+                // Error (Status 400 atau 404 dari JSONResponse)
+                submitProductButton.textContent = originalButtonText;
+                submitProductButton.disabled = false;
+
+                showToast('Error', data.message || 'Failed to process request.', 'error');
+
+                // Tampilkan error per-field
+                for (const [field, errors] of Object.entries(data.errors || {})) {
+                    const errorElement = document.getElementById(`error-${field}`);
+                    if (errorElement) {
+                        errorElement.textContent = errors.join(' ');
+                        errorElement.classList.remove('hidden');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('AJAX Error:', error);
+            showToast('Error', 'Failed to connect to server.', 'error');
+        } finally {
+            // Reset button state regardless of success or failure (atau network error)
+            submitProductButton.textContent = originalButtonText;
+            submitProductButton.disabled = false;
+        }
+
+
+        return false;
+    }
+
+    // Attach submit handler
+    productForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        submitProductForm();
+    });
+
+    // --- Dynamic Modal for Edit ---
+    async function openEditModal(productId) {
+        resetModal(); // Reset form untuk keamanan
+
+        const FETCH_URL = FETCH_URL_TEMPLATE.replace('00000000-0000-0000-0000-000000000000', productId);
+
+        try {
+            // 1. Fetch data
+            const response = await fetch(FETCH_URL);
+            if (!response.ok) throw new Error('Product not found');
+            const product = await response.json();
+
+            // 2. Set modal untuk mode UPDATE
+            modalTitle.textContent = 'Edit Product';
+            modalSubtitle.textContent = `Update detail produk: ${product.name}`;
+            submitProductButton.textContent = 'Update Product';
+
+            // 3. Isi form fields
+            productIdField.value = product.id;
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productDescription').value = product.description;
+            document.getElementById('productThumbnail').value = product.thumbnail || '';
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productStock').value = product.stock;
+            document.getElementById('productRating').value = product.rating || '';
+            document.getElementById('productBrand').value = product.brand || '';
+            document.getElementById('is_featured').checked = product.is_featured;
+
+            // 4. Tampilkan modal
+            showModal();
+
+        } catch (error) {
+            console.error('Error opening edit modal:', error);
+            showToast('Error', 'Failed to load product details for editing.', 'error');
+        }
+    }
+
+
+</script>

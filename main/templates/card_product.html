@@ -44,9 +44,9 @@
                 <span class="font-bold text-gray-900">{{ product.rating }}</span>
             </p>
             {% else %}
-            <time datetime="{{ product.created_at|date:'c' }}">
-                {{ product.created_at|date:"M j, Y" }}
-            </time>
+            <p class="text-sm text-gray-600">
+                No Rating
+            </p>
             {% endif %}
 
             <span class="text-xl font-bold text-stone-700 font-price">
@@ -72,14 +72,14 @@
 
             {% if user.is_authenticated and product.user == user %}
             <div class="flex space-x-3">
-                <a href="{% url 'main:edit_product' product.id %}"
+                <button type="button" onclick="openEditModal('{{ product.id }}')"
                     class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
                     Edit
-                </a>
-                <a href="{% url 'main:delete_product' product.id %}"
+                </button>
+                <button type="button" onclick="confirmDeleteProduct('{{ product.id }}', '{{ product.name|escapejs }}')"
                     class="text-red-600 hover:text-red-700 text-sm transition-colors">
                     Delete
-                </a>
+                </button>
             </div>
             {% endif %}
         </div>
