@@ -261,7 +261,7 @@ def logout_user(request): #
     
     # Cek apakah ini permintaan AJAX POST
     if request.method == 'POST':
-        # AJAX Logout Response
+        #
         response = JsonResponse({"status": "SUCCESS", "message": "Logout successful!"}, status=200)
     else:
         # Traditional GET/Redirect Logout

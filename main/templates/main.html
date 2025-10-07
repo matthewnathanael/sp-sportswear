@@ -491,7 +491,7 @@
             displayPageSection({ showLoading: true, showGrid: false, showEmpty: false, showError: false });
         }
         refreshButton.disabled = true;
-        refreshIcon.classList.add('animate-spin'); // 🌟 Mulai animasi
+        refreshIcon.classList.add('animate-spin');
 
         try {
             const response = await fetch(PRODUCTS_API_ENDPOINT, {
@@ -514,7 +514,7 @@
             // --- END: Cleanup/Animation Stop ---
             // Logika ini SELALU dijalankan setelah try atau catch selesai
             refreshButton.disabled = false;
-            refreshIcon.classList.remove('animate-spin'); // 🛑 Hentikan animasi
+            refreshIcon.classList.remove('animate-spin');
         }
     }
 
