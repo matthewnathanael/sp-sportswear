@@ -63,50 +63,87 @@ def delete_product_ajax(request, id): # <-- FUNGSI DELETE BARU
         return HttpResponseNotFound("Product not found or access denied")
 
 
+# @csrf_exempt
+# @require_POST
+# @login_required(login_url='/login')
+# def add_product_entry_ajax(request):
+   
+#     form = ProductForm(request.POST)
+    
+#     if form.is_valid():
+#         new_product = form.save(commit = False)
+#         new_product.user = request.user # Menggunakan request.user karena @login_required
+        
+#         # FIX: Explicitly handle the is_featured checkbox
+#         # If the checkbox is unchecked, it won't be in request.POST, and we need to ensure it's False.
+#         # This prevents a potential unhandled exception when saving the ModelForm instance.
+#         new_product.is_featured = request.POST.get("is_featured") == 'on'
+        
+#         new_product.save() # Saves the product with the correct is_featured value
+  
+#         return JsonResponse({"status": "CREATED", "message": "Produk berhasil ditambahkan!"}, status=201)
+    
+#     errors = dict(form.errors.items())
+#     return JsonResponse({"status": "ERROR", "message": "Gagal menambahkan produk. Periksa input Anda.", "errors": errors}, status=400)
+
 @csrf_exempt
 @require_POST
 @login_required(login_url='/login')
 def add_product_entry_ajax(request):
-   
-    form = ProductForm(request.POST)
-    
-    if form.is_valid():
-        new_product = form.save(commit = False)
-        new_product.user = request.user # Menggunakan request.user karena @login_required
+    try:
+        # 1. Mengambil data dari request.POST
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        description = request.POST.get("description")
+        thumbnail = request.POST.get("thumbnail")
+        category = request.POST.get("category")
+        stock = request.POST.get("stock")
+        rating_str = request.POST.get("rating")
+        brand = request.POST.get("brand")
         
-        # FIX: Explicitly handle the is_featured checkbox
-        # If the checkbox is unchecked, it won't be in request.POST, and we need to ensure it's False.
-        # This prevents a potential unhandled exception when saving the ModelForm instance.
-        new_product.is_featured = request.POST.get("is_featured") == 'on'
+        # 2. Penanganan checkbox dan user
+        is_featured = request.POST.get("is_featured") == 'on' 
+        user = request.user
         
-        new_product.save() # Saves the product with the correct is_featured value
-  
-        return JsonResponse({"status": "CREATED", "message": "Produk berhasil ditambahkan!"}, status=201)
-    
-    errors = dict(form.errors.items())
-    return JsonResponse({"status": "ERROR", "message": "Gagal menambahkan produk. Periksa input Anda.", "errors": errors}, status=400)
+        # 3. Validasi dan Konversi Data
+        
+        # Validasi sederhana untuk field yang harus ada dan numerik
+        if not all([name, price, description, category, stock]):
+            return JsonResponse({"status": "ERROR", "message": "Missing required fields."}, status=400)
+        
+        # Konversi ke tipe data yang benar dan membersihkan tag HTML (strip_tags)
+        price = int(price)
+        stock = int(stock)
+        rating = float(rating_str) if rating_str else None # Float field
+        
+        name = strip_tags(name)
+        description = strip_tags(description)
+        brand = strip_tags(brand) if brand else ""
+        
+        # 4. Membuat instance Product baru
+        new_product = Product(
+            name=name, 
+            price=price,
+            description=description,
+            thumbnail=thumbnail,
+            category=category,
+            is_featured=is_featured,
+            stock=stock,
+            rating=rating,
+            brand=brand,
+            user=user # Set user dari request
+        )
+        new_product.save()
+        
+        # 5. Menggunakan JsonResponse agar kompatibel dengan JS di modal.html
+        return JsonResponse({"status": "CREATED", "message": "Produk berhasil ditambahkan (Manual)."}, status=201)
 
-
-# @require_POST
-# def add_news_entry_ajax(request):
-#     title = request.POST.get("title")
-#     content = request.POST.get("content")
-#     category = request.POST.get("category")
-#     thumbnail = request.POST.get("thumbnail")
-#     is_featured = request.POST.get("is_featured") == 'on'  # checkbox handling
-#     user = request.user
-
-#     new_news = News(
-#         title=title, 
-#         content=content,
-#         category=category,
-#         thumbnail=thumbnail,
-#         is_featured=is_featured,
-#         user=user
-#     )
-#     new_news.save()
-
-#     return HttpResponse(b"CREATED", status=201)
+    except (ValueError, TypeError) as e:
+        # Error saat konversi tipe data (misal: price bukan angka)
+        return JsonResponse({"status": "ERROR", "message": f"Invalid input data: {e}"}, status=400)
+    except Exception as e:
+        # Catch-all untuk error lain (misal: IntegrityError)
+        return JsonResponse({"status": "ERROR", "message": f"An unexpected error occurred: {e}"}, status=500)
 
 def edit_product_entry_ajax(request, id): # <--- Tambahkan parameter id
     
