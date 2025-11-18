@@ -31,7 +31,7 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1","10.0.2.2" "matthew-nathanael-spsportswear.pbp.cs.ui.ac.id"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1","10.0.2.2", "matthew-nathanael-spsportswear.pbp.cs.ui.ac.id"]
 CSRF_TRUSTED_ORIGINS = [
     "https://matthew-nathanael-spsportswear.pbp.cs.ui.ac.id"
 ]
