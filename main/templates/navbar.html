@@ -1,5 +1,5 @@
 <nav class="fixed top-0 left-0 w-full bg-stone-700 border-b border-stone-800 shadow-lg z-50">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-7 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <div class="flex items-center">
                 <h1 class="text-xl font-semibold text-white">
@@ -7,12 +7,14 @@
                 </h1>
             </div>
 
+
+        <!-- Dekstop Navigation -->
             <div class="hidden md:flex items-center space-x-8">
                 <a href="/" class="text-white hover:text-amber-200 font-medium transition-colors">
                     Home
                 </a>
             </div>
-
+            <!-- Dekstop User Section -->
             <div class="hidden md:flex items-center space-x-6">
                 {% if user.is_authenticated %}
                 <div class="text-right">
@@ -33,7 +35,7 @@
                 </a>
                 {% endif %}
             </div>
-
+        <!-- Mobile menu -->
             <div class="md:hidden flex items-center">
                 <button class="mobile-menu-button p-2 text-white hover:text-amber-200 transition-colors">
                     <span class="sr-only">Open menu</span>
@@ -47,6 +49,7 @@
             </div>
         </div>
     </div>
+    <!-- Mobile menu -->
     <div class="mobile-menu hidden md:hidden bg-white border-t border-gray-200">
         <div class="px-6 py-4 space-y-4">
             <div class="space-y-1">
@@ -55,6 +58,7 @@
                 </a>
             </div>
 
+        <!-- Mobile user section -->
             <div class="border-t border-gray-200 pt-4">
                 {% if user.is_authenticated %}
                 <div class="mb-4">

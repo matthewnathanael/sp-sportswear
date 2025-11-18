@@ -14,6 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 import json
+import requests
+
 # Create your views here.
 
 @login_required(login_url='/login')
@@ -207,8 +209,16 @@ def show_xml(request):
     xml_data = serializers.serialize("xml", product_list)
     return HttpResponse(xml_data, content_type="application/xml")
 
+@login_required(login_url='/login')
 def show_json(request):
-    product_list = Product.objects.all()
+    filter_type = request.GET.get("filter", "all")
+
+    if filter_type == "my":
+        # Ambil produk milik user yang sedang login
+        product_list = Product.objects.select_related('user').filter(user=request.user)
+    else: 
+        # Ambil semua produk
+        product_list = Product.objects.select_related('user').all()
     data = [
         {
            'id': str(product.id),
@@ -222,6 +232,7 @@ def show_json(request):
             'rating': product.rating,
             'brand': product.brand,
             'user_id': product.user_id,
+            'user_username': product.user.username if product.user else None,
         }
         for product in product_list
     ]
@@ -351,3 +362,79 @@ def register_ajax(request):
     errors = dict(form.errors.items())
     return JsonResponse({"status": "ERROR", "message": "Failed to create account. Please check your input.", "errors": errors}, status=400)
 
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+    
+@csrf_exempt
+@login_required(login_url='/login') # Pastikan user login untuk membuat produk
+def create_product_flutter(request):
+    if request.method == 'POST':
+        try:
+            # Mengambil data dari JSON body
+            data = json.loads(request.body)
+            
+            # Membersihkan data teks menggunakan strip_tags
+            name = strip_tags(data.get("name", ""))
+            description = strip_tags(data.get("description", ""))
+            brand = strip_tags(data.get("brand", ""))
+            
+            # Mengambil data lain dari JSON
+            price = int(data.get("price", 0))
+            category = data.get("category", "lain") # 'lain' sebagai default
+            thumbnail = data.get("thumbnail", "")
+            is_featured = bool(data.get("is_featured", False))
+            stock = int(data.get("stock", 0))
+            # Handle rating (bisa jadi float atau None)
+            rating_raw = data.get("rating", None)
+            rating = float(rating_raw) if rating_raw is not None else None
+
+            user = request.user
+            
+            # Validasi sederhana
+            if not name or price <= 0:
+                return JsonResponse({"status": "error", "message": "Nama dan Harga yang valid diperlukan."}, status=400)
+
+            # Membuat objek Product baru
+            new_product = Product(
+                name=name,
+                price=price,
+                description=description,
+                category=category,
+                thumbnail=thumbnail,
+                is_featured=is_featured,
+                stock=stock,
+                rating=rating,
+                brand=brand,
+                user=user
+            )
+            new_product.save()
+            
+            # Sukses
+            return JsonResponse({"status": "success", "message": "Produk berhasil dibuat."}, status=201) # 201 Created
+
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+        except (ValueError, TypeError) as e:
+            return JsonResponse({"status": "error", "message": f"Invalid data type: {str(e)}"}, status=400)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}, status=500)
+
+    else:
+        # Hanya izinkan metode POST
+        return JsonResponse({"status": "error", "message": "Metode POST saja yang diizinkan"}, status=405)
