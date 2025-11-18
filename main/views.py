@@ -209,7 +209,6 @@ def show_xml(request):
     xml_data = serializers.serialize("xml", product_list)
     return HttpResponse(xml_data, content_type="application/xml")
 
-@login_required(login_url='/login')
 def show_json(request):
     filter_type = request.GET.get("filter", "all")
 
